@@ -48,10 +48,10 @@ trainOnGPU = args.trainOnGPU
 totalEpochs = args.totalNumberOfEpochs
 logPath = args.experimentName
 initialLR = args.initialLearningRate
-decaryLR = args.decayLearningRate
+decayLR = args.decayLearningRate
 schedulerLR = args.learningRateScheduler
 bestValidationAccuracy = 0.0
-macTrain = args.trainOnMac
+trainOnMac = args.trainOnMac
 modelName = args.modelName
 
 logPath = "./"+logPath
@@ -111,11 +111,114 @@ else:
         device = torch.device("cpu")
 
 if modelName == "resattunet":
-    model = UNet(11, 11)
+    model = ResidualAttentionUNet(11, 11)
 elif modelName == "attunet":
-    model = 
+    model = AttentionUNet(11, 11)
 elif modelName == "unet":
-    model = 
+    model = UNet(11, 11)
 else:
     print("Enter correct choice of architecture")
-    exit
+    exit()
+
+model.to(device)
+
+if agg_to_water:
+    agg_distr = sum(class_distr[-4:])
+    class_distr[6] += agg_distr
+    class_distr = class_distr[:-4]
+
+weight = gen_weights(class_distr, c = 1.03)
+criterion = torch.nn.CrossEntropyLoss(ignore_index=-1, reduction= 'mean', weight=weight.to(device))
+
+optimizer = torch.optim.Adam(model.parameters(), lr=initialLR, weight_decay=decayLR)
+
+# Learning Rate scheduler
+if schedulerLR=="rop":
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=10, verbose=True)
+else:
+    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, [40,80,120,160], gamma=0.5, verbose=True)
+
+bestMacroF1 = 0.0
+bestMicroF1 = 0.0
+bestWeightF1 = 0.0
+
+i = 0
+for epoch in range(1, totalEpochs+1):
+    trainingBatches = 0
+    model.train()
+    print("Training for epoch:",epoch)
+    for (image, target) in tqdm(trainLoader):
+        image = image.to(device)
+        target = target.to(device)
+        optimizer.zero_grad()
+        logits = model(image)
+        loss = criterion(logits, target)
+        loss.backward()
+        trainingBatches+=target.shape[0]
+        writer.add_scalar('Training Loss', loss, i)
+        i = i + 1
+        optimizer.step()
+    print("Completed epoch:",epoch)
+    print("Validating model")
+    model.eval()
+    testBatches = 0
+    yTrue = []
+    yPredicted = []
+    testLossF = []
+    with torch.no_grad():
+        for (image, target) in testLoader:
+            image = image.to(device)
+            target = target.to(device)
+            logits = model(image)
+            loss = criterion(logits, target)
+            logits = torch.movedim(logits, (0,1,2,3), (0,3,1,2))
+            logits = logits.reshape((-1,11))
+            target = target.reshape(-1)
+            mask = target != -1
+            logits = logits[mask]
+            target = target[mask]
+            probs = torch.nn.functional.softmax(logits, dim=1).cpu().numpy()
+            target = target.cpu().numpy()
+            testBatches += target.shape[0]
+            testLossF.append((loss.data*target.shape[0]).tolist())
+            yPredicted += probs.argmax(1).tolist()
+            yTrue += target.tolist()
+        writer.add_scalar('Testing Loss', sum(testLossF)/testBatches, epoch)
+        yPredicted = np.asarray(yPredicted)
+        yTrue = np.asarray(yTrue)
+        acc = Evaluation(yPredicted, yTrue)
+        modelname = "savedModels/att-unet/intermediateModel.pth"
+        torch.save(model.state_dict(), modelname)
+        print("Test Macro Precision",acc["macroPrec"])
+        writer.add_scalar('Test Macro Precision', acc["macroPrec"], epoch)
+        writer.add_scalar('Test Micro Precision', acc["microPrec"], epoch)
+        writer.add_scalar('Test Weight Precision', acc["weightPrec"], epoch)
+
+        print("Test Macro Recall",acc["macroPrec"])
+        writer.add_scalar('Test Macro Recall', acc["macroRec"], epoch)
+        writer.add_scalar('Test Micro Recall', acc["microRec"], epoch)
+        writer.add_scalar('Test Weight Recall', acc["weightRec"], epoch)
+
+        print("Test Macro F1",acc["macroF1"])
+        writer.add_scalar('Test Macro F1', acc["macroF1"], epoch)
+        if acc["macroF1"]>bestMacroF1:
+          bestMacroF1 = acc["macroF1"]
+          modelname = "savedModels/att-unet/bestMacroF1Model.pth"
+          torch.save(model.state_dict(), modelname)
+        writer.add_scalar('Test Micro F1', acc["microF1"], epoch)
+        if acc["microF1"]>bestMicroF1:
+          bestMicroF1 = acc["microF1"]
+          modelname = "savedModels/att-unet/bestMicroF1Model.pth"
+          torch.save(model.state_dict(), modelname)
+        writer.add_scalar('Test Weight F1', acc["weightF1"], epoch)
+        if acc["weightF1"]>bestWeightF1:
+          bestWeightF1 = acc["microF1"]
+          modelname = "savedModels/att-unet/bestWeightF1Model.pth"
+          torch.save(model.state_dict(), modelname)
+
+        writer.add_scalar('Test Macro IoU', acc["IoU"], epoch)
+        print("Test Macro IoU",acc["IoU"])
+    if schedulerLR=="rop":
+        scheduler.step(sum(testLossF) / testBatches)
+    else:
+        scheduler.step()
