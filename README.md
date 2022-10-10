@@ -15,6 +15,7 @@ MARIDA can be easily downloaded from [here](https://doi.org/10.5281/zenodo.51519
 <h2> Contents </h2>
 
 - [SADMA: SAtellite baseD MArine debris detection](#sadma-satellite-based-marine-debris-detection)
+- [Pre-print Paper](#pre-print-paper)
 - [Installing requirements](#installing-requirements)
 - [Model details](#model-details)
   - [Figure 1: Building blocks of ResAttUNet](#figure-1-building-blocks-of-resattunet)
@@ -24,6 +25,8 @@ MARIDA can be easily downloaded from [here](https://doi.org/10.5281/zenodo.51519
 - [Pre-trained Weights](#pre-trained-weights)
 - [Author Details](#author-details)
   
+## Pre-print Paper
+The link to the pre-print paper shall be added soon.
 ## Installing requirements
 The requirements for running the code can be easily installed using the ```requirements.txt``` file. To install the requirements just use:
 ```bash
