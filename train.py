@@ -24,6 +24,7 @@ from model import *
 from dataloader import GenDEBRIS, bands_mean, bands_std, RandomRotationTransform , class_distr, gen_weights
 from metrics import Evaluation
 from tqdm import tqdm
+from customLosses import FocalLoss
 
 from torch.utils.tensorboard import SummaryWriter
 
@@ -38,6 +39,7 @@ parser.add_argument('--initialLearningRate', type=int, default=1e-3, help="initi
 parser.add_argument('--decayLearningRate', type=int, default=0, help="learning rate decay, helps stablizing model")
 parser.add_argument('--learningRateScheduler', type=str, default="ms", help="learning rate scheduler, can be either rop or ms")
 parser.add_argument('--trainOnMac', type=bool, default=False, help="True if training on a Mac Device with Metal GPU support")
+parser.add_argument('--focalLoss', type=bool, default=False, help="Trains the model using Focal loss instead of Weighted Xent Loss")
 parser.add_argument('--modelName', type=str, default="resattunet", help="Model architecture to train, currently supports: unet, attunet, resattunet")
 
 
@@ -53,6 +55,7 @@ schedulerLR = args.learningRateScheduler
 bestValidationAccuracy = 0.0
 trainOnMac = args.trainOnMac
 modelName = args.modelName
+useFocalLoss = args.focalLoss
 
 logPath = "./"+logPath
 os.makedirs(logPath)
@@ -127,8 +130,11 @@ if agg_to_water:
     class_distr[6] += agg_distr
     class_distr = class_distr[:-4]
 
-weight = gen_weights(class_distr, c = 1.03)
-criterion = torch.nn.CrossEntropyLoss(ignore_index=-1, reduction= 'mean', weight=weight.to(device))
+if useFocalLoss:
+    criterion = FocalLoss()
+else:
+    weight = gen_weights(class_distr, c = 1.03)
+    criterion = torch.nn.CrossEntropyLoss(ignore_index=-1, reduction= 'mean', weight=weight.to(device))
 
 optimizer = torch.optim.Adam(model.parameters(), lr=initialLR, weight_decay=decayLR)
 
@@ -187,7 +193,7 @@ for epoch in range(1, totalEpochs+1):
         yPredicted = np.asarray(yPredicted)
         yTrue = np.asarray(yTrue)
         acc = Evaluation(yPredicted, yTrue)
-        modelname = "savedModels/att-unet/intermediateModel.pth"
+        modelname = logPath +"/intermediateModel.pth"
         torch.save(model.state_dict(), modelname)
         print("Test Macro Precision",acc["macroPrec"])
         writer.add_scalar('Test Macro Precision', acc["macroPrec"], epoch)
@@ -203,17 +209,17 @@ for epoch in range(1, totalEpochs+1):
         writer.add_scalar('Test Macro F1', acc["macroF1"], epoch)
         if acc["macroF1"]>bestMacroF1:
           bestMacroF1 = acc["macroF1"]
-          modelname = "savedModels/att-unet/bestMacroF1Model.pth"
+          modelname = logPath +"/bestMacroF1Model.pth"
           torch.save(model.state_dict(), modelname)
         writer.add_scalar('Test Micro F1', acc["microF1"], epoch)
         if acc["microF1"]>bestMicroF1:
           bestMicroF1 = acc["microF1"]
-          modelname = "savedModels/att-unet/bestMicroF1Model.pth"
+          modelname = logPath +"/bestMicroF1Model.pth"
           torch.save(model.state_dict(), modelname)
         writer.add_scalar('Test Weight F1', acc["weightF1"], epoch)
         if acc["weightF1"]>bestWeightF1:
           bestWeightF1 = acc["microF1"]
-          modelname = "savedModels/att-unet/bestWeightF1Model.pth"
+          modelname = logPath +"/bestWeightF1Model.pth"
           torch.save(model.state_dict(), modelname)
 
         writer.add_scalar('Test Macro IoU', acc["IoU"], epoch)

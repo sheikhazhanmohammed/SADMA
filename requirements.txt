@@ -1,0 +1,11 @@
+pytorch
+gdal
+rasterio
+scikit-learn
+numpy
+tensorboard
+torchvision
+scikit-image
+pandas
+pytables
+tqdm
