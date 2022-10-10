@@ -1,12 +1,10 @@
 <center>
 
-# SADMA: SAtellite baseD MArine debris detection
+## SADMA: SAtellite baseD MArine debris detection
 
-<center>
 <a href="#"><img src="https://img.shields.io/github/workflow/status/milesial/PyTorch-UNet/Publish%20Docker%20image?logo=github&style=for-the-badge" /></a>
 <a href="https://pytorch.org/"><img src="https://img.shields.io/badge/PyTorch-v1.9.0-red.svg?logo=PyTorch&style=for-the-badge" /></a>
 <a href="#"><img src="https://img.shields.io/badge/python-v3.6+-blue.svg?logo=python&style=for-the-badge" /></a>
-</center>
 
 </center>
 
@@ -14,20 +12,26 @@ Implementation of the Residual Attention UNet in PyTorch on [MARIDA](https://git
 
 MARIDA can be easily downloaded from [here](https://doi.org/10.5281/zenodo.5151941). Alternatively, MARIDA can be downloaded from the Radiant MLHub.
 
-### Contents
+<h2> Contents </h2>
+
+- [SADMA: SAtellite baseD MArine debris detection](#sadma-satellite-based-marine-debris-detection)
 - [Installing requirements](#installing-requirements)
 - [Model details](#model-details)
+  - [Figure 1: Building blocks of ResAttUNet](#figure-1-building-blocks-of-resattunet)
+  - [Figure 2: ResAttUNet Architecture](#figure-2-resattunet-architecture)
 - [Results](#results)
-- [Author details](#author-details)
+  - [Figure 3: Results on test dataset](#figure-3-results-on-test-dataset)
+- [Pre-trained Weights](#pre-trained-weights)
+- [Author Details](#author-details)
   
-### Installing requirements
+## Installing requirements
 The requirements for running the code can be easily installed using the ```requirements.txt``` file. To install the requirements just use:
 ```bash
 pip install -r requirements.txt
 ```
 Once the requirements are installed, you can use the training and evaluation code easily.
 
-### Model details
+## Model details
 The introduced model is a mixture of existing Residual blocks and Convolutional Block Attention Module with a simple UNet model. The residual blocks are used after the downsampling layers to extract deeper features, and channel and spatial attention is used to apply extra attention to the sparse nature of the debris.
 The blocks used in the network are shown in [Figure 1](#building-blocks-of-resattunet)
 <div>
@@ -51,7 +55,7 @@ The complete network architecture is shown in [Figure 2](#figure-2-resattunet-ar
 </center>
 </div>
 
-### Results
+## Results
 The introduced model achieves state-of-the-art results across all metrics on the test set of MARIDA.
 [Figure 3](#figure-3-results-on-test-dataset) shows the performance of various models discussed, along with existing state-of-the-art results on the dataset.
 <div>
@@ -64,7 +68,11 @@ The introduced model achieves state-of-the-art results across all metrics on the
 </center>
 </div>
 
-### Author Details
+## Pre-trained Weights
+
+The pre-trained weights for the model can be downloaded from [Google drive](https://drive.google.com/drive/folders/13WIrYVOIK1WZ1kFlZoOfXpjwyhAedXLF?usp=sharing)
+
+## Author Details
 
 - Name: Azhan Mohammed 
 - LinkedIn: https://www.linkedin.com/in/azhanmohammed/
