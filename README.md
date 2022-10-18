@@ -27,7 +27,16 @@ MARIDA can be easily downloaded from [here](https://doi.org/10.5281/zenodo.51519
 - [Author Details](#author-details)
   
 ## Pre-print Paper
-The link to the pre-print paper shall be added soon.
+Link to arxiv pre-print: [ResAttUNet: Detecting Marine Debris using an Attention activated Residual UNet](https://arxiv.org/pdf/2210.08506.pdf)
+If you find the repository useful, please consider giving a star ⭐ and cite:
+```bib
+@inproceedings{Mohammed2022ResAttUNetDM,
+  title={ResAttUNet: Detecting Marine Debris using an Attention activated Residual UNet},
+  author={Azhan Mohammed},
+  year={2022}
+}
+```
+
 ## Installing requirements
 The requirements for running the code can be easily installed using the ```requirements.txt``` file. To install the requirements just use:
 ```bash
