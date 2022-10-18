@@ -2,9 +2,10 @@
 
 ## SADMA: SAtellite baseD MArine debris detection
 
-<a href="#"><img src="https://img.shields.io/github/workflow/status/milesial/PyTorch-UNet/Publish%20Docker%20image?logo=github&style=for-the-badge" /></a>
-<a href="https://pytorch.org/"><img src="https://img.shields.io/badge/PyTorch-v1.9.0-red.svg?logo=PyTorch&style=for-the-badge" /></a>
-<a href="#"><img src="https://img.shields.io/badge/python-v3.6+-blue.svg?logo=python&style=for-the-badge" /></a>
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/resattunet-detecting-marine-debris-using-an/image-segmentation-on-marida)](https://paperswithcode.com/sota/image-segmentation-on-marida?p=resattunet-detecting-marine-debris-using-an)
+<a href="#"><img src="https://img.shields.io/github/workflow/status/milesial/PyTorch-UNet/Publish%20Docker%20image?logo=github" /></a>
+<a href="https://pytorch.org/"><img src="https://img.shields.io/badge/PyTorch-v1.9.0-red.svg?logo=PyTorch" /></a>
+<a href="#"><img src="https://img.shields.io/badge/python-v3.6+-blue.svg?logo=python" /></a>
 
 </center>
 
